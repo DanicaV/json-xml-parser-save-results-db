@@ -140,8 +140,8 @@ namespace JsonXmlParserSaveResultsToDB.ViewModels
         private void onOpenString()
         {
             Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
-            dlg.Filter = "xml files (*.xml)|*.xml|JSON files (*.json)|*.json";
-            // dlg.Filter = "JSON, XML files (*.json,*.xml)|*.json; *.xml";
+            //dlg.Filter = "xml files (*.xml)|*.xml|JSON files (*.json)|*.json";
+            dlg.Filter = "JSON, XML files (*.json,*.xml)|*.json; *.xml";
             Nullable<bool> result = dlg.ShowDialog();
             // Get the selected file name and display in a TextBox 
             if (result == true)
