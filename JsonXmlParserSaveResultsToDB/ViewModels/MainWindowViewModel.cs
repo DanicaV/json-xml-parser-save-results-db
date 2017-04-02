@@ -159,14 +159,10 @@ namespace JsonXmlParserSaveResultsToDB.ViewModels
             //dlg.Filter = "xml files (*.xml)|*.xml|JSON files (*.json)|*.json";
             dlg.Filter = "JSON, XML files (*.json,*.xml)|*.json; *.xml";
             Nullable<bool> result = dlg.ShowDialog();
-
-
             // Get the selected file name and display in a TextBox 
             if (result == true)
             {
-                // Open document 
-                //string filename = dlg.FileName;
-                // string filecontent = dlg.Title;
+ 
                 FilenameA = dlg.FileName;
                 FilecontentA = File.ReadAllText(dlg.FileName);
                 FilecontentT = FilecontentT.Trim();
@@ -181,11 +177,8 @@ namespace JsonXmlParserSaveResultsToDB.ViewModels
             if (FilecontentA.StartsWith("<") && FilecontentA.EndsWith(">"))
             {
                 var popups = new Menu();
-                //XML
-                // To convert an XML node contained in string xml into a JSON string   
                 XmlDocument doc = new XmlDocument();
                 doc.LoadXml(FilecontentA);
-
                 XmlNode GeneralInformationNode =
                               doc.SelectSingleNode("/menu");
                 FileparseValue = GeneralInformationNode.Attributes.GetNamedItem("value").Value;
@@ -193,7 +186,6 @@ namespace JsonXmlParserSaveResultsToDB.ViewModels
                 doc.SelectSingleNode("/menu/popup");
                 XmlNodeList PopupNodeList =
                PopupListNode.SelectNodes("menuitem");
-
                 foreach (XmlNode node in PopupNodeList)
                 {
                     Popup aPopup = new Popup();
@@ -203,7 +195,6 @@ namespace JsonXmlParserSaveResultsToDB.ViewModels
                     PopupValue = popups.Popups[0].Value;
                     PopupOnCl = popups.Popups[0].OnClick;
                 }
-
                 PopupValue = popups.Popups[0].Value;
                 PopupOnCl = popups.Popups[0].OnClick;
                 PopupValue2 = popups.Popups[1].Value;
