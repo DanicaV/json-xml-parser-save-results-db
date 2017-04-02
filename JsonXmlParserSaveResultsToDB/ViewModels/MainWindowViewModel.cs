@@ -200,19 +200,19 @@ namespace JsonXmlParserSaveResultsToDB.ViewModels
                     aPopup.Value = node.Attributes.GetNamedItem("value").Value;
                     aPopup.OnClick = node.Attributes.GetNamedItem("onclick").Value;
                     popups.Popups.Add(aPopup);
-
-                    PopupValue = aPopup.Value;
-                    PopupOnCl = aPopup.OnClick;
-                    PopupValue2 = aPopup.Value;
-                    PopupOnCl2 = aPopup.OnClick;
-                    PopupValue3 = aPopup.Value;
-                    PopupOnCl3 = aPopup.OnClick;
-                    FileparseA += FileparseValue + Environment.NewLine + PopupValue + Environment.NewLine + PopupOnCl + Environment.NewLine;
-
+                    PopupValue = popups.Popups[0].Value;
+                    PopupOnCl = popups.Popups[0].OnClick;
                 }
 
-
-
+                PopupValue = popups.Popups[0].Value;
+                PopupOnCl = popups.Popups[0].OnClick;
+                PopupValue2 = popups.Popups[1].Value;
+                PopupOnCl2 = popups.Popups[1].OnClick;
+                PopupValue3 = popups.Popups[2].Value;
+                PopupOnCl3 = popups.Popups[2].OnClick;
+                FileparseA = FileparseValue + Environment.NewLine + PopupValue + Environment.NewLine + PopupOnCl + Environment.NewLine +
+                      FileparseValue + Environment.NewLine + PopupValue2 + Environment.NewLine + PopupOnCl2 + Environment.NewLine +
+                      FileparseValue + Environment.NewLine + PopupValue3 + Environment.NewLine + PopupOnCl3 + Environment.NewLine;
             }
 
             else
