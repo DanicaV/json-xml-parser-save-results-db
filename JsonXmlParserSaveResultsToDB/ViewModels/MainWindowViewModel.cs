@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Input;
 using JsonXmlParserSaveResultsToDB.Database;
 using Newtonsoft.Json;
+using System.Xml;
 
 namespace JsonXmlParserSaveResultsToDB.ViewModels
 {
@@ -81,6 +82,17 @@ namespace JsonXmlParserSaveResultsToDB.ViewModels
             get { return _filecontent; }
             set { SetProperty(ref _filecontent, value); }
         }
+        public string FilecontentP
+        {
+            get { return _filecontent; }
+            set { SetProperty(ref _filecontent, value); }
+        }
+
+        public string FilecontentT
+        {
+            get { return _filecontent; }
+            set { SetProperty(ref _filecontent, value); }
+        }
         public Stream Stream
         {
             get;
@@ -139,41 +151,92 @@ namespace JsonXmlParserSaveResultsToDB.ViewModels
 
         private void onOpenString()
         {
+            FilenameA = string.Empty;
+            FilecontentA = string.Empty;
+            FileparseA = string.Empty;
+
             Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
             //dlg.Filter = "xml files (*.xml)|*.xml|JSON files (*.json)|*.json";
             dlg.Filter = "JSON, XML files (*.json,*.xml)|*.json; *.xml";
             Nullable<bool> result = dlg.ShowDialog();
+
+
             // Get the selected file name and display in a TextBox 
             if (result == true)
             {
                 // Open document 
-                string filename = dlg.FileName;
-                FilenameA = filename;
-                FilecontentA = File.ReadAllText(filename);
+                //string filename = dlg.FileName;
+                // string filecontent = dlg.Title;
+                FilenameA = dlg.FileName;
+                FilecontentA = File.ReadAllText(dlg.FileName);
+                FilecontentT = FilecontentT.Trim();
+                FilecontentP = FilecontentT.Trim();
+
             }
 
         }
 
         private void onParse()
         {
-            dynamic jsonDe = JsonConvert.DeserializeObject(FilecontentA);
-            foreach (var counter in jsonDe)
+            if (FilecontentA.StartsWith("<") && FilecontentA.EndsWith(">"))
             {
-                FileparseValue = jsonDe.menu.value;
-                PopupValue = jsonDe.menu.popup.menuitem[0].value;
-                PopupOnCl = jsonDe.menu.popup.menuitem[0].onclick;
-                PopupValue2 = jsonDe.menu.popup.menuitem[1].value;
-                PopupOnCl2 = jsonDe.menu.popup.menuitem[1].onclick;
-                PopupValue3 = jsonDe.menu.popup.menuitem[2].value;
-                PopupOnCl3 = jsonDe.menu.popup.menuitem[2].onclick;
-                FileparseA = FileparseValue + Environment.NewLine + PopupValue + Environment.NewLine + PopupOnCl + Environment.NewLine
-                    + FileparseValue + Environment.NewLine + PopupValue2 + Environment.NewLine + PopupOnCl2 + Environment.NewLine
-                    + FileparseValue + Environment.NewLine + PopupValue3 + Environment.NewLine + PopupOnCl3 + Environment.NewLine;
+                var popups = new Menu();
+                //XML
+                // To convert an XML node contained in string xml into a JSON string   
+                XmlDocument doc = new XmlDocument();
+                doc.LoadXml(FilecontentA);
+
+                XmlNode GeneralInformationNode =
+                              doc.SelectSingleNode("/menu");
+                FileparseValue = GeneralInformationNode.Attributes.GetNamedItem("value").Value;
+                XmlNode PopupListNode =
+                doc.SelectSingleNode("/menu/popup");
+                XmlNodeList PopupNodeList =
+               PopupListNode.SelectNodes("menuitem");
+
+                foreach (XmlNode node in PopupNodeList)
+                {
+                    Popup aPopup = new Popup();
+                    aPopup.Value = node.Attributes.GetNamedItem("value").Value;
+                    aPopup.OnClick = node.Attributes.GetNamedItem("onclick").Value;
+                    popups.Popups.Add(aPopup);
+
+                    PopupValue = aPopup.Value;
+                    PopupOnCl = aPopup.OnClick;
+                    PopupValue2 = aPopup.Value;
+                    PopupOnCl2 = aPopup.OnClick;
+                    PopupValue3 = aPopup.Value;
+                    PopupOnCl3 = aPopup.OnClick;
+                    FileparseA += FileparseValue + Environment.NewLine + PopupValue + Environment.NewLine + PopupOnCl + Environment.NewLine;
+
+                }
+
+
+
+            }
+
+            else
+            {
+                dynamic jsonDe = JsonConvert.DeserializeObject(FilecontentA);
+                foreach (var counter in jsonDe)
+                {
+                    FileparseValue = jsonDe.menu.value;
+                    PopupValue = jsonDe.menu.popup.menuitem[0].value;
+                    PopupOnCl = jsonDe.menu.popup.menuitem[0].onclick;
+                    PopupValue2 = jsonDe.menu.popup.menuitem[1].value;
+                    PopupOnCl2 = jsonDe.menu.popup.menuitem[1].onclick;
+                    PopupValue3 = jsonDe.menu.popup.menuitem[2].value;
+                    PopupOnCl3 = jsonDe.menu.popup.menuitem[2].onclick;
+                    FileparseA = FileparseValue + Environment.NewLine + PopupValue + Environment.NewLine + PopupOnCl + Environment.NewLine
+                        + FileparseValue + Environment.NewLine + PopupValue2 + Environment.NewLine + PopupOnCl2 + Environment.NewLine
+                        + FileparseValue + Environment.NewLine + PopupValue3 + Environment.NewLine + PopupOnCl3 + Environment.NewLine;
+                }
             }
 
         }
-
     }
 
 }
+
+
 
