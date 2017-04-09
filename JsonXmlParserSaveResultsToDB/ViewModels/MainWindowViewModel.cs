@@ -127,30 +127,40 @@ namespace JsonXmlParserSaveResultsToDB.ViewModels
 
         private void onSave()
         {
-            using (var dc = new MenuContext())
+            try
             {
-                string fileparseValue = FileparseValue;
-                string popupValue = PopupValue;
-                string popupOnCl = PopupOnCl;
-                string popupValue2 = PopupValue2;
-                string popupOnCl2 = PopupOnCl2;
-                string popupValue3 = PopupValue3;
-                string popupOnCl3 = PopupOnCl3;
-                var menu = new Menu() { Value = fileparseValue };
-                var menuitemNew = new Popup() { Value = popupValue, OnClick = popupOnCl };
-                var menuitemNew2 = new Popup() { Value = popupValue2, OnClick = popupOnCl2 };
-                var menuitemNew3 = new Popup() { Value = popupValue3, OnClick = popupOnCl3 };
-                menu.Popups.Add(menuitemNew);
-                menu.Popups.Add(menuitemNew2);
-                menu.Popups.Add(menuitemNew3);
-                dc.Menus.Add(menu);
-                dc.SaveChanges();
-                MessageBox.Show("snimljeno");
+                using (var dc = new MenuContext())
+                {
+                    string fileparseValue = FileparseValue;
+                    string popupValue = PopupValue;
+                    string popupOnCl = PopupOnCl;
+                    string popupValue2 = PopupValue2;
+                    string popupOnCl2 = PopupOnCl2;
+                    string popupValue3 = PopupValue3;
+                    string popupOnCl3 = PopupOnCl3;
+                    var menu = new Menu() { Value = fileparseValue };
+                    var menuitemNew = new Popup() { Value = popupValue, OnClick = popupOnCl };
+                    var menuitemNew2 = new Popup() { Value = popupValue2, OnClick = popupOnCl2 };
+                    var menuitemNew3 = new Popup() { Value = popupValue3, OnClick = popupOnCl3 };
+                    menu.Popups.Add(menuitemNew);
+                    menu.Popups.Add(menuitemNew2);
+                    menu.Popups.Add(menuitemNew3);
+                    dc.Menus.Add(menu);
+                    dc.SaveChanges();
+                    MessageBox.Show("Podaci su uspešno snimljeni u bazu");
+
+                }
+            }
+            catch (InvalidOperationException)
+            {
+                MessageBox.Show("Neuspešno povezivanje sa bazom");
+
             }
         }
 
         private void onOpenString()
         {
+
             FilenameA = string.Empty;
             FilecontentA = string.Empty;
             FileparseA = string.Empty;
@@ -162,72 +172,114 @@ namespace JsonXmlParserSaveResultsToDB.ViewModels
             // Get the selected file name and display in a TextBox 
             if (result == true)
             {
- 
-                FilenameA = dlg.FileName;
-                FilecontentA = File.ReadAllText(dlg.FileName);
-                FilecontentT = FilecontentT.Trim();
-                FilecontentP = FilecontentT.Trim();
+                try
+                {
+                    FilenameA = dlg.FileName;
+                    FilecontentA = File.ReadAllText(dlg.FileName);
+                    FilecontentA = FilecontentA.Trim();
 
+                }
+                catch (IOException)
+                {
+                    MessageBox.Show("Nije moguce otvoriti odabrani fajl");
+                }
+            }
+        }
+
+        private void parseXML()
+        {
+            var popups = new Menu();
+
+            XmlDocument doc = new XmlDocument();
+            doc.LoadXml(FilecontentA);
+
+            XmlNode GeneralInformationNode =
+                          doc.SelectSingleNode("/menu");
+            FileparseValue = GeneralInformationNode.Attributes.GetNamedItem("value").Value;
+            XmlNode PopupListNode =
+            doc.SelectSingleNode("/menu/popup");
+            XmlNodeList PopupNodeList =
+           PopupListNode.SelectNodes("menuitem");
+
+            foreach (XmlNode node in PopupNodeList)
+            {
+                Popup aPopup = new Popup();
+                aPopup.Value = node.Attributes.GetNamedItem("value").Value;
+                aPopup.OnClick = node.Attributes.GetNamedItem("onclick").Value;
+                popups.Popups.Add(aPopup);
+                PopupValue = popups.Popups[0].Value;
+                PopupOnCl = popups.Popups[0].OnClick;
             }
 
+            PopupValue = popups.Popups[0].Value;
+            PopupOnCl = popups.Popups[0].OnClick;
+            PopupValue2 = popups.Popups[1].Value;
+            PopupOnCl2 = popups.Popups[1].OnClick;
+            PopupValue3 = popups.Popups[2].Value;
+            PopupOnCl3 = popups.Popups[2].OnClick;
+            FileparseA = FileparseValue + Environment.NewLine + PopupValue + Environment.NewLine + PopupOnCl + Environment.NewLine +
+                  FileparseValue + Environment.NewLine + PopupValue2 + Environment.NewLine + PopupOnCl2 + Environment.NewLine +
+                  FileparseValue + Environment.NewLine + PopupValue3 + Environment.NewLine + PopupOnCl3 + Environment.NewLine;
+        }
+
+
+        private void parseJSON()
+        {
+            dynamic jsonDe = JsonConvert.DeserializeObject(FilecontentA);
+            foreach (var counter in jsonDe)
+            {
+                try
+                {
+                    FileparseValue = jsonDe.menu.value;
+
+                }
+                catch (Exception)
+                {
+                    MessageBox.Show("Nije moguce otvoriti odabrani fajl");
+
+                }
+                PopupValue = jsonDe.menu.popup.menuitem[0].value;
+                PopupOnCl = jsonDe.menu.popup.menuitem[0].onclick;
+                PopupValue2 = jsonDe.menu.popup.menuitem[1].value;
+                PopupOnCl2 = jsonDe.menu.popup.menuitem[1].onclick;
+                PopupValue3 = jsonDe.menu.popup.menuitem[2].value;
+                PopupOnCl3 = jsonDe.menu.popup.menuitem[2].onclick;
+                FileparseA = FileparseValue + Environment.NewLine + PopupValue + Environment.NewLine + PopupOnCl + Environment.NewLine
+                    + FileparseValue + Environment.NewLine + PopupValue2 + Environment.NewLine + PopupOnCl2 + Environment.NewLine
+                    + FileparseValue + Environment.NewLine + PopupValue3 + Environment.NewLine + PopupOnCl3 + Environment.NewLine;
+            }
         }
 
         private void onParse()
         {
+
             if (FilecontentA.StartsWith("<") && FilecontentA.EndsWith(">"))
             {
-                var popups = new Menu();
-                XmlDocument doc = new XmlDocument();
-                doc.LoadXml(FilecontentA);
-                XmlNode GeneralInformationNode =
-                              doc.SelectSingleNode("/menu");
-                FileparseValue = GeneralInformationNode.Attributes.GetNamedItem("value").Value;
-                XmlNode PopupListNode =
-                doc.SelectSingleNode("/menu/popup");
-                XmlNodeList PopupNodeList =
-               PopupListNode.SelectNodes("menuitem");
-                foreach (XmlNode node in PopupNodeList)
+                MessageBox.Show("Odabrali ste XML fajl, da li želite da ga parsirate?", "XML - Parsiranje");
+                parseXML();
+
+            }
+
+            else if (FilecontentA.StartsWith("{") && FilecontentA.EndsWith("}"))
+            {
+                if (FilecontentA.Trim() == "{ }")
                 {
-                    Popup aPopup = new Popup();
-                    aPopup.Value = node.Attributes.GetNamedItem("value").Value;
-                    aPopup.OnClick = node.Attributes.GetNamedItem("onclick").Value;
-                    popups.Popups.Add(aPopup);
-                    PopupValue = popups.Popups[0].Value;
-                    PopupOnCl = popups.Popups[0].OnClick;
+                    FileparseA = "Prazan fajl";
                 }
-                PopupValue = popups.Popups[0].Value;
-                PopupOnCl = popups.Popups[0].OnClick;
-                PopupValue2 = popups.Popups[1].Value;
-                PopupOnCl2 = popups.Popups[1].OnClick;
-                PopupValue3 = popups.Popups[2].Value;
-                PopupOnCl3 = popups.Popups[2].OnClick;
-                FileparseA = FileparseValue + Environment.NewLine + PopupValue + Environment.NewLine + PopupOnCl + Environment.NewLine +
-                      FileparseValue + Environment.NewLine + PopupValue2 + Environment.NewLine + PopupOnCl2 + Environment.NewLine +
-                      FileparseValue + Environment.NewLine + PopupValue3 + Environment.NewLine + PopupOnCl3 + Environment.NewLine;
+                else
+                    MessageBox.Show("Odabrali ste JSON fajl, da li želite da ga parsirate?", "JSON - Parsiranje");
+                parseJSON();
+
             }
 
             else
             {
-                dynamic jsonDe = JsonConvert.DeserializeObject(FilecontentA);
-                foreach (var counter in jsonDe)
-                {
-                    FileparseValue = jsonDe.menu.value;
-                    PopupValue = jsonDe.menu.popup.menuitem[0].value;
-                    PopupOnCl = jsonDe.menu.popup.menuitem[0].onclick;
-                    PopupValue2 = jsonDe.menu.popup.menuitem[1].value;
-                    PopupOnCl2 = jsonDe.menu.popup.menuitem[1].onclick;
-                    PopupValue3 = jsonDe.menu.popup.menuitem[2].value;
-                    PopupOnCl3 = jsonDe.menu.popup.menuitem[2].onclick;
-                    FileparseA = FileparseValue + Environment.NewLine + PopupValue + Environment.NewLine + PopupOnCl + Environment.NewLine
-                        + FileparseValue + Environment.NewLine + PopupValue2 + Environment.NewLine + PopupOnCl2 + Environment.NewLine
-                        + FileparseValue + Environment.NewLine + PopupValue3 + Environment.NewLine + PopupOnCl3 + Environment.NewLine;
-                }
+                MessageBox.Show("Nije moguce parsirati odabrani fajl");
             }
 
         }
     }
 
 }
-
 
 
